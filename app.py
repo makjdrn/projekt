@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for
+from flask import Flask, render_template, request, url_for, send_file
 from flaskext.mysql import MySQL
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512
@@ -31,7 +31,19 @@ def auth():
     verifier = PKCS1_v1_5.new(key)
     if verifier.verify(h, signature):
         """ TODO Wyswietlanie dokumentu na ekranie """
-        return render_template('yourein.html')
+        cursor = mysql.connect().cursor()
+        cursor.execute("SELECT DocName FROM Podpisy WHERE Sign = '" + sign + "'")
+        DocName = cursor.fetchone()
+        DocName = ''.join(DocName)
+        cursor.execute("SELECT DocPath FROM Podpisy WHERE Sign = '" + sign + "'")
+        DocPath = cursor.fetchone()
+        DocPath = ''.join(DocPath)
+        filePath = DocPath + "/" + DocName
+        with open(filePath, "r") as f:
+            content = f.read()
+        
+        fileName = "'" + DocName + "'"
+        return render_template("yourein.html", content=content)
     else:
         return "Zle"
     
