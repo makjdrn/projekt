@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, url_for, send_file
+from flask import Flask, render_template, request, url_for, send_file, make_response
 from flaskext.mysql import MySQL
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512
@@ -24,7 +24,7 @@ def auth():
     name = splited[0]
     surname = splited[1]
 
-    message = open('Test', 'r').read()
+    message = open('Test.pdf', 'r').read()
     key = RSA.importKey(open('mypkey.der').read())
     signature = b64decode(sign)
     h = SHA512.new(message)
@@ -39,17 +39,26 @@ def auth():
         DocPath = cursor.fetchone()
         DocPath = ''.join(DocPath)
         filePath = DocPath + "/" + DocName
-        with open(filePath, "r") as f:
-            content = f.read()
+        """ content = DocName """
+        
         
         fileName = "'" + DocName + "'"
-        return render_template("yourein.html", content=content)
+        """ return send_file(f, attachment_filename='Test.pdf') """
+        """ return render_template("yourein.html", content=filePath) """
+        return render_template("yourein.html")
     else:
         return "Zle"
+@app.route('/verification/<content>')
+def show_pdf(docs=None):
+    f = open('/home/pi/Desktop/Server/Test.pdf', "rb")
+    response = make_response(f)
+    response.headers['Content-Type'] = 'application/pdf'
+    response.headers['Content-Disposition'] = 'inline; filename=%s.pdf' % 'Test.pdf'
+    return response
     
 @app.route('/cakes')
 def cakes():
     return 'Yummy cakes!'
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, threaded = True,host='0.0.0.0')
