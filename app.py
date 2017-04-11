@@ -1,9 +1,12 @@
 from flask import Flask, render_template, request, url_for, send_file, make_response
 from flaskext.mysql import MySQL
+from gevent.wsgi import WSGIServer
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA512
 from Crypto.PublicKey import RSA
 from base64 import b64encode, b64decode
+from wand.image import Image
+import re
 
 mysql = MySQL()
 app = Flask(__name__)
@@ -43,9 +46,13 @@ def auth():
         
         
         fileName = "'" + DocName + "'"
+        with Image(filename='Test.pdf') as img:
+            with img.convert('jpg') as converted:
+                converted.save(filename='Test.jpg')
         """ return send_file(f, attachment_filename='Test.pdf') """
         """ return render_template("yourein.html", content=filePath) """
-        return render_template("yourein.html")
+        m = re.match(r'(.*)', 'Test-.jpg')
+        return render_template("yourein.html", content=m)
     else:
         return "Zle"
 @app.route('/verification/<content>')
