@@ -27,45 +27,26 @@ def auth():
     name = splited[0]
     surname = splited[1]
 
-    message = open('Test.pdf', 'r').read()
-    key = RSA.importKey(open('mypkey.der').read())
+    cursor = mysql.connect().cursor()
+    cursor.execute("SELECT DocName FROM Podpisy WHERE Sign = '" + sign + "' and Name = '" + name + "' and Surname = '" + surname + "'")
+    DocName = cursor.fetchone()
+    DocName = ''.join(DocName)
+
+    cursor.execute("SELECT PublicKey FROM Podpisy WHERE Sign = '" + sign + "' and Name = '" + name + "' and Surname = '" + surname + "'")
+    pubkey = cursor.fetchone()
+
+    message = open("/home/pi/Desktop/Server/static/" + DocName, 'r').read()
+    key = RSA.importKey(pubkey)
     signature = b64decode(sign)
     h = SHA512.new(message)
     verifier = PKCS1_v1_5.new(key)
     if verifier.verify(h, signature):
-        """ TODO Wyswietlanie dokumentu na ekranie """
-        cursor = mysql.connect().cursor()
-        cursor.execute("SELECT DocName FROM Podpisy WHERE Sign = '" + sign + "'")
-        DocName = cursor.fetchone()
-        DocName = ''.join(DocName)
-        cursor.execute("SELECT DocPath FROM Podpisy WHERE Sign = '" + sign + "'")
-        DocPath = cursor.fetchone()
-        DocPath = ''.join(DocPath)
-        filePath = DocPath + "/" + DocName
-        """ content = DocName """
-        
-        
-        fileName = "'" + DocName + "'"
-        with Image(filename='Test.pdf') as img:
-            with img.convert('jpg') as converted:
-                converted.save(filename='Test.jpg')
-        """ return send_file(f, attachment_filename='Test.pdf') """
-        """ return render_template("yourein.html", content=filePath) """
-        m = re.match(r'(.*)', 'Test-.jpg')
-        return render_template("yourein.html", content=m)
+        return render_template("yourein.html", content=DocName)
     else:
         return "Zle"
-@app.route('/verification/<content>')
-def show_pdf(docs=None):
-    f = open('/home/pi/Desktop/Server/Test.pdf', "rb")
-    response = make_response(f)
-    response.headers['Content-Type'] = 'application/pdf'
-    response.headers['Content-Disposition'] = 'inline; filename=%s.pdf' % 'Test.pdf'
-    return response
-    
 @app.route('/cakes')
 def cakes():
     return 'Yummy cakes!'
 
 if __name__ == '__main__':
-    app.run(debug=True, threaded = True,host='0.0.0.0')
+    app.run(debug=False, threaded = True,host='0.0.0.0')

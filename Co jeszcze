@@ -1,4 +1,7 @@
-1) Wyswietlac wszystkie dokumenty
-2) Przekazywac nazwe w parametrze
-3) Umiescic program converter do pliku app.py
-4)
+1) Wyswietlac wszystkie dokumenty **** DONE ****
+2) Umiescic program converter do pliku app.py **** DONE ****
+3) Zautomatyzowac generowanie kluczy prywatnych dla dowolnego pliku
+   - Podawac nazwe pliku w lini komend (wraz z imieniem i nazwiskiem?) **** DONE **** (Nie)
+   - Musimy generowac nowe pary kluczy dla wszystkich uzyktownikow **** DONE ****
+4) Handling errors
+5) Zabezpieczyc
