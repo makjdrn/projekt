@@ -23,14 +23,25 @@ def index():
 def auth():
     sign = request.form['sign']
     person = request.form['person']
-    splited = person.split()
-    name = splited[0]
-    surname = splited[1]
+    while True:
+        try:
+            splited = person.split()
+            name = splited[0]
+            surname = splited[1]
+            break
+        except IndexError:
+            return render_template("login_error.html")
 
-    cursor = mysql.connect().cursor()
+    try:
+        cursor = mysql.connect().cursor()
+    except mysql.Error:
+        return render_template("database_error.html")
     cursor.execute("SELECT DocName FROM Podpisy WHERE Sign = '" + sign + "' and Name = '" + name + "' and Surname = '" + surname + "'")
     DocName = cursor.fetchone()
-    DocName = ''.join(DocName)
+    if DocName is None:
+        return render_template("login_error.html")
+    else:
+        DocName = ''.join(DocName)
 
     cursor.execute("SELECT PublicKey FROM Podpisy WHERE Sign = '" + sign + "' and Name = '" + name + "' and Surname = '" + surname + "'")
     pubkey = cursor.fetchone()
@@ -44,9 +55,7 @@ def auth():
         return render_template("yourein.html", content=DocName)
     else:
         return "Zle"
-@app.route('/cakes')
-def cakes():
-    return 'Yummy cakes!'
+
 
 if __name__ == '__main__':
     app.run(debug=False, threaded = True,host='0.0.0.0')
